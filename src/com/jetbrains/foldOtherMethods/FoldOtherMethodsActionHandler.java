@@ -36,7 +36,7 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
                 StructureViewBuilder.PROVIDER.getStructureViewBuilder(virtualFile.getFileType(), virtualFile, project);
         LOG.assertTrue(structureViewBuilder != null, "Structure view model is not available");
         StructureViewModel viewModel = ((TreeBasedStructureViewBuilder) structureViewBuilder).createStructureViewModel(null);
-        Set<PsiElement> structureElements = new HashSet<>();
+        Set<PsiElement> structureElements = new HashSet<PsiElement>();
 
         populateChildren(structureElements, viewModel.getRoot());
 
@@ -52,13 +52,13 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
                     }
                     if (structureElements.contains(element) &&
                             StringUtil.containsLineBreak(element.getText())) {
-                        int start1 = 0;
+                        final int start1 = 0;
                         int end1 = element.getTextRange().getStartOffset();
                         if (element.getPrevSibling() != null) {
                             end1 = element.getPrevSibling().getTextRange().getStartOffset();
                         }
                         int start2 = element.getTextRange().getEndOffset();
-                        int end2 = file.getTextLength();
+                        final int end2 = file.getTextLength();
                         if (element.getNextSibling() instanceof PsiWhiteSpace) {
                             start2 = element.getNextSibling().getTextRange().getEndOffset();
                         } else if (element.getNextSibling().getText().equals(";")) {
@@ -73,23 +73,26 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
                             collapse = currentRegion.isExpanded();
                         }
 
-                        FoldingModelEx model = (FoldingModelEx) editor.getFoldingModel();
+                        final FoldingModelEx model = (FoldingModelEx) editor.getFoldingModel();
 
-                        HashMap<FoldRegion, Integer> foldedRegionsStart = new HashMap<>();
-                        HashMap<FoldRegion, Integer> foldedRegionsEnd = new HashMap<>();
-                        HashMap<FoldRegion, String> foldedRegionsText = new HashMap<>();
-                        model.runBatchFoldingOperation(() -> {
-                            for (FoldRegion r : model.getAllFoldRegions().clone()) {
-                                if (r.getPlaceholderText().equals("<-- ") ||
-                                        r.getPlaceholderText().equals("-->")) {
-                                    if (!r.isExpanded()) {
-                                        foldedRegionsStart.put(r, r.getStartOffset());
-                                        foldedRegionsEnd.put(r, r.getEndOffset());
-                                        foldedRegionsText.put(r, r.getPlaceholderText());
-                                        r.setExpanded(true);
+                        final HashMap<FoldRegion, Integer> foldedRegionsStart = new HashMap<FoldRegion, Integer>();
+                        final HashMap<FoldRegion, Integer> foldedRegionsEnd = new HashMap<FoldRegion, Integer>();
+                        final HashMap<FoldRegion, String> foldedRegionsText = new HashMap<FoldRegion, String>();
+                        model.runBatchFoldingOperation(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (FoldRegion r : model.getAllFoldRegions().clone()) {
+                                    if (r.getPlaceholderText().equals("<-- ") ||
+                                            r.getPlaceholderText().equals("-->")) {
+                                        if (!r.isExpanded()) {
+                                            foldedRegionsStart.put(r, r.getStartOffset());
+                                            foldedRegionsEnd.put(r, r.getEndOffset());
+                                            foldedRegionsText.put(r, r.getPlaceholderText());
+                                            r.setExpanded(true);
+                                        }
+                                        model.removeFoldRegion(r);
+                                        info.removeRegion(r);
                                     }
-                                    model.removeFoldRegion(r);
-                                    info.removeRegion(r);
                                 }
                             }
                         });
@@ -98,28 +101,34 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
                             if (!model.intersectsRegion(start1, end1) && !model.intersectsRegion(start2, end2)) {
                                 final int fStart2 = start2;
                                 final int fEnd1 = end1;
-                                model.runBatchFoldingOperation(() -> {
-                                    if (fEnd1 > start1) {
-                                        FoldRegion region1 = model.addFoldRegion(start1, fEnd1, "<-- ");
-                                        LOG.assertTrue(region1 != null, "Fold region is not created. Folding model: " + model);
-                                        region1.setExpanded(false);
-                                    }
+                                model.runBatchFoldingOperation(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (fEnd1 > start1) {
+                                            FoldRegion region1 = model.addFoldRegion(start1, fEnd1, "<-- ");
+                                            LOG.assertTrue(region1 != null, "Fold region is not created. Folding model: " + model);
+                                            region1.setExpanded(false);
+                                        }
 
-                                    if (end2 > fStart2) {
-                                        FoldRegion region2 = model.addFoldRegion(fStart2, end2, "-->");
-                                        LOG.assertTrue(region2 != null, "Fold region is not created. Folding model: " + model);
-                                        region2.setExpanded(false);
+                                        if (end2 > fStart2) {
+                                            FoldRegion region2 = model.addFoldRegion(fStart2, end2, "-->");
+                                            LOG.assertTrue(region2 != null, "Fold region is not created. Folding model: " + model);
+                                            region2.setExpanded(false);
+                                        }
                                     }
                                 });
                                 editor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
                                 break;
-                            } else model.runBatchFoldingOperation(() -> {
-                                // Restore folded regions on failure
-                                for (FoldRegion r : foldedRegionsStart.keySet()) {
-                                    FoldRegion rc = model.addFoldRegion(foldedRegionsStart.get(r), foldedRegionsEnd.get(r),
-                                            foldedRegionsText.get(r));
-                                    if (rc != null) {
-                                        rc.setExpanded(false);
+                            } else model.runBatchFoldingOperation(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // Restore folded regions on failure
+                                    for (FoldRegion r : foldedRegionsStart.keySet()) {
+                                        FoldRegion rc = model.addFoldRegion(foldedRegionsStart.get(r), foldedRegionsEnd.get(r),
+                                                foldedRegionsText.get(r));
+                                        if (rc != null) {
+                                            rc.setExpanded(false);
+                                        }
                                     }
                                 }
                             });
