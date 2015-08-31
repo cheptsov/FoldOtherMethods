@@ -1,4 +1,4 @@
-<idea-plugin version="2">
+<idea-plugin url="https://github.com/cheptsov/FoldOtherMethods" version="2">
     <id>com.jetbrains.foldOtherMethods</id>
     <name>Fold Other Methods</name>
     <version>1.0</version>
