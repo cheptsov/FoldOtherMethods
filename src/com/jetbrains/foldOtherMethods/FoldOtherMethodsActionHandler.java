@@ -11,11 +11,13 @@ import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.ex.FoldingModelEx;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.HashMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,16 +50,21 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
                     if (element == null) {
                         break;
                     }
-                    if (structureElements.contains(element)) {
+                    if (structureElements.contains(element) &&
+                            StringUtil.containsLineBreak(element.getText())) {
                         int start1 = 0;
-                        int end1 = element.getTextOffset();
-                        if (element.getPrevSibling() instanceof PsiWhiteSpace) {
-                            end1 = element.getPrevSibling().getTextOffset();
+                        int end1 = element.getTextRange().getStartOffset();
+                        if (element.getPrevSibling() != null) {
+                            end1 = element.getPrevSibling().getTextRange().getStartOffset();
                         }
-                        int start2 = element.getTextOffset() + element.getTextLength();
+                        int start2 = element.getTextRange().getEndOffset();
                         int end2 = file.getTextLength();
                         if (element.getNextSibling() instanceof PsiWhiteSpace) {
-                            start2 = element.getNextSibling().getTextOffset() + element.getNextSibling().getTextLength();
+                            start2 = element.getNextSibling().getTextRange().getEndOffset();
+                        } else if (element.getNextSibling().getText().equals(";")) {
+                            if (PsiTreeUtil.nextLeaf(element.getNextSibling()) instanceof PsiWhiteSpace) {
+                                start2 = PsiTreeUtil.nextLeaf(element.getNextSibling()).getTextRange().getEndOffset();
+                            }
                         }
                         boolean collapse = true;
 
@@ -92,13 +99,17 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
                                 final int fStart2 = start2;
                                 final int fEnd1 = end1;
                                 model.runBatchFoldingOperation(() -> {
-                                    FoldRegion region1 = model.addFoldRegion(start1, fEnd1, "<-- ");
-                                    LOG.assertTrue(region1 != null, "Fold region is not created. Folding model: " + model);
-                                    region1.setExpanded(false);
+                                    if (fEnd1 > start1) {
+                                        FoldRegion region1 = model.addFoldRegion(start1, fEnd1, "<-- ");
+                                        LOG.assertTrue(region1 != null, "Fold region is not created. Folding model: " + model);
+                                        region1.setExpanded(false);
+                                    }
 
-                                    FoldRegion region2 = model.addFoldRegion(fStart2, end2, "-->");
-                                    LOG.assertTrue(region2 != null, "Fold region is not created. Folding model: " + model);
-                                    region2.setExpanded(false);
+                                    if (end2 > fStart2) {
+                                        FoldRegion region2 = model.addFoldRegion(fStart2, end2, "-->");
+                                        LOG.assertTrue(region2 != null, "Fold region is not created. Folding model: " + model);
+                                        region2.setExpanded(false);
+                                    }
                                 });
                                 editor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
                                 break;
