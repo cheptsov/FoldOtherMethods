@@ -1,0 +1,40 @@
+<idea-plugin version="2">
+    <id>com.jetbrains.foldOtherMethods</id>
+    <name>Fold Other Methods</name>
+    <version>1.0</version>
+    <vendor email="andrey.cheptsov@jetbrains.com" url="http://www.jetbrains.com">JetBrains</vendor>
+
+    <description><![CDATA[
+      The plugin provides an action to fold all the methods but the current one.
+    ]]></description>
+
+    <change-notes><![CDATA[
+    ]]>
+    </change-notes>
+
+    <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="131"/>
+
+    <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+
+    <application-components>
+    </application-components>
+
+    <project-components>
+    </project-components>
+
+    <actions>
+        <action id="FoldOtherMethods" class="com.jetbrains.foldOtherMethods.FoldOtherMethodsAction"
+                text="Fold Other Methods">
+            <add-to-group group-id="FoldingGroup" anchor="last"/>
+            <keyboard-shortcut first-keystroke="ctrl shift alt PERIOD" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="meta shift alt PERIOD" keymap="Mac OS X 10.5+"/>
+        </action>
+    </actions>
+
+</idea-plugin>
