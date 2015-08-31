@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FoldOtherMethodsPlugin.iml" filepath="$PROJECT_DIR$/FoldOtherMethodsPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FoldOtherMethods.iml" filepath="$PROJECT_DIR$/FoldOtherMethods.iml" />
     </modules>
   </component>
 </project>

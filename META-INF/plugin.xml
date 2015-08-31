@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/cheptsov/FoldOtherMethods" version="2">
     <id>com.jetbrains.foldOtherMethods</id>
     <name>Fold Other Methods</name>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <vendor email="andrey.cheptsov@jetbrains.com" url="http://www.jetbrains.com">JetBrains</vendor>
 
     <description><![CDATA[
@@ -9,6 +9,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <p>1.0.2</p>
+        <ul>
+            <li>Bugfixes</li>
+        </ul>
+
         <p>1.0.1</p>
         <ul>
             <li>Target Java level changed to 6 for older IDE version compatibility</li>
