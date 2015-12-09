@@ -3,27 +3,29 @@ package com.jetbrains.foldOtherMethods;
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.folding.impl.EditorFoldingInfo;
 import com.intellij.codeInsight.folding.impl.FoldingUtil;
-import com.intellij.ide.structureView.*;
+import com.intellij.ide.structureView.StructureViewBuilder;
+import com.intellij.ide.structureView.StructureViewModel;
+import com.intellij.ide.structureView.StructureViewTreeElement;
+import com.intellij.ide.structureView.TextEditorBasedStructureViewModel;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.ex.FoldingModelEx;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.HashMap;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,7 +38,8 @@ public class FoldOtherMethodsActionHandler implements CodeInsightActionHandler {
         final StructureViewBuilder structureViewBuilder =
                 StructureViewBuilder.PROVIDER.getStructureViewBuilder(virtualFile.getFileType(), virtualFile, project);
         if (structureViewBuilder != null) {
-            StructureViewModel viewModel = ((TreeBasedStructureViewBuilder) structureViewBuilder).createStructureViewModel(null);
+            final FileEditor fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(virtualFile);
+            StructureViewModel viewModel = structureViewBuilder.createStructureView(fileEditor, project).getTreeModel();
             try {
                 Set<PsiElement> structureElements = new HashSet<PsiElement>();
                 populateChildren(structureElements, viewModel.getRoot());
